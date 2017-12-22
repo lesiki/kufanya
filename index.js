@@ -2,12 +2,15 @@ var vorpal = require('vorpal')();
 const chalk = vorpal.chalk;
 var jsonfile = require('jsonfile');
 var _ = require('lodash');
+var pad = require('pad-right');
 
 var file = 'kufanya.json'
-var data;
+var data = { todos: [] };
 
 jsonfile.readFile(file, function(err, obj) {
-  data = obj;
+  if(typeof(obj) !== 'undefined') {
+    data = obj;
+  }
 })
 
 function persist() {
@@ -16,9 +19,6 @@ function persist() {
 }
 
 function addTodo(newTodo) {
-  if(typeof(data) === 'undefined') {
-    data = { todos: [] }
-  }
   data.todos.push({
     text: newTodo,
     date: new Date().getTime(),
@@ -52,20 +52,50 @@ vorpal
   });
 
 vorpal
+  .command('done', 'Mark as done')
+  .action(function (args, cb) {
+    var undone = _.filter(data.todos, function(o) { return !o.done });
+    var v = this;
+    this.prompt({
+      type: 'checkbox',
+      name: 'entry',
+      message: 'Choose entry to mark as done:',
+      choices: _.map(undone, function(it) {
+        return it.text;
+      })
+    },
+    function(entriesToMarkDone){
+      _.each(entriesToMarkDone.entry, function(labelToMarkDone) {
+        var ind = _.findIndex(data.todos, function(todoEntry) {
+          return todoEntry.text === labelToMarkDone;
+        });
+        data.todos[ind].done = true;
+      })
+      persist();
+      v.log(`Marked ${entriesToMarkDone.entry.length} entries as done.`);
+      cb();
+    })
+  });
+
+vorpal
   .command('list', 'List todos')
   .option('-a, --all')
   .action(function(args, callback) {
-    var midnight = new Date();
-    midnight.setHours(0,0,0,0);
-    var undone = _.filter(data.todos, function(o) { return !o.done });
-    var today = _.filter(data.todos, function(o) {
-      return o.date > midnight;
-    });
-    this.log("Today\n");
-    reportTodos(_.intersection(today, undone), "Todo", false, this);
-    reportTodos(_.difference(today, undone), "Done", true, this);
-    this.log("\n");
-
+    if(data.todos.length == 0) {
+      this.log("No todos here\n");
+    }
+    else {
+      var midnight = new Date();
+      midnight.setHours(0,0,0,0);
+      var undone = _.filter(data.todos, function(o) { return !o.done });
+      var today = _.filter(data.todos, function(o) {
+        return o.date > midnight;
+      });
+      this.log("Today\n");
+      reportTodos(_.intersection(today, undone), "Todo", false, this);
+      reportTodos(_.difference(today, undone), "Done", true, this);
+      this.log("");
+    }
     callback();
   });
 
@@ -81,8 +111,12 @@ function reportTodos(sublist, label, areDone, v) {
     chalkingFunction = chalk.cyan;
   }
   v.log(`  ${chalkingFunction(label)}`);
+  var id = 0;
   _.each(sublist, function(entry) {
-    v.log(chalkingFunction(`  [${areDone ? 'x' : ' '}] ${entry.text}`));
+    id ++;
+    v.log(
+      chalkingFunction(`  [${areDone ? 'x' : ' '}] ${entry.text}`)
+    );
   })
   v.log(chalkingFunction(''));
 }
