@@ -4,7 +4,7 @@ A simple todo app for the CLI, implemented in JS.
 
 ## Usage
 
-
+[![gif demo of kufanya](http://g.recordit.co/xpjeQCf5b8.gif)
 
 ## Installation
 
