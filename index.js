@@ -52,29 +52,35 @@ vorpal
   });
 
 vorpal
-  .command('done', 'Mark as done')
+  .command('done', 'Mark as done\n')
   .action(function (args, cb) {
     var undone = _.filter(data.todos, function(o) { return !o.done });
     var v = this;
-    this.prompt({
-      type: 'checkbox',
-      name: 'entry',
-      message: 'Choose entry to mark as done:',
-      choices: _.map(undone, function(it) {
-        return it.text;
+    if(undone.length > 0) {
+      this.prompt({
+        type: 'checkbox',
+        name: 'entry',
+        message: 'Choose entry to mark as done:',
+        choices: _.map(undone, function(it) {
+          return it.text;
+        })
+      },
+      function(entriesToMarkDone){
+        _.each(entriesToMarkDone.entry, function(labelToMarkDone) {
+          var ind = _.findIndex(data.todos, function(todoEntry) {
+            return todoEntry.text === labelToMarkDone;
+          });
+          data.todos[ind].done = true;
+        })
+        persist();
+        v.log(`Marked ${entriesToMarkDone.entry.length} entries as done.`);
+        cb();
       })
-    },
-    function(entriesToMarkDone){
-      _.each(entriesToMarkDone.entry, function(labelToMarkDone) {
-        var ind = _.findIndex(data.todos, function(todoEntry) {
-          return todoEntry.text === labelToMarkDone;
-        });
-        data.todos[ind].done = true;
-      })
-      persist();
-      v.log(`Marked ${entriesToMarkDone.entry.length} entries as done.`);
+    }
+    else {
+      v.log('Nothing to mark as done.');
       cb();
-    })
+    }
   });
 
 vorpal
