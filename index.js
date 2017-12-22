@@ -107,6 +107,7 @@ vorpal
         var todayUndone = _.intersection(today, undone);
         reportTodos(todayUndone, "Todo", false, this);
         reportTodos(_.difference(today, todayUndone), "Done", true, this);
+        this.log(chalk.grey('Only showing today\'s entries, use -a to see all'));
       }
       this.log("");
     }
