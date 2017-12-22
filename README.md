@@ -2,6 +2,8 @@
 
 A simple todo app for the CLI, implemented in JS.
 
+Defaults to `today mode` for day-to-day use, because in reality we all have a huge backlog of un-ticked 'one day' todos.
+
 ## Usage
 
 [![gif demo of kufanya](http://g.recordit.co/xpjeQCf5b8.gif)
