@@ -97,9 +97,17 @@ vorpal
       var today = _.filter(data.todos, function(o) {
         return o.date > midnight;
       });
-      this.log("Today\n");
-      reportTodos(_.intersection(today, undone), "Todo", false, this);
-      reportTodos(_.difference(today, undone), "Done", true, this);
+      if(args.options.all) {
+        this.log("All-time\n");
+        reportTodos(undone, "Todo", false, this);
+        reportTodos(_.difference(data.todos, undone), "Done", true, this);
+      }
+      else {
+        this.log("Today\n");
+        var todayUndone = _.intersection(today, undone);
+        reportTodos(todayUndone, "Todo", false, this);
+        reportTodos(_.difference(today, todayUndone), "Done", true, this);
+      }
       this.log("");
     }
     callback();
