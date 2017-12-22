@@ -27,7 +27,7 @@ function addTodo(newTodo) {
   persist();
 }
 
-function interactiveAdd(v) {
+function interactiveAdd(v, cb) {
   v.prompt({
     type: 'input',
     name: 'newTodo',
@@ -36,7 +36,10 @@ function interactiveAdd(v) {
   function(result){
     if (result.newTodo) {
       addTodo(result.newTodo);
-      interactiveAdd(v);
+      interactiveAdd(v, cb);
+    }
+    else {
+      cb();
     }
   });
 }
@@ -45,8 +48,7 @@ vorpal
   .command('add', 'Bulk-add new todos')
   .action(function(args, callback) {
     this.log("Add new tasks. Press ⏎  with empty line to exit");
-    interactiveAdd(this);
-    callback();
+    interactiveAdd(this, callback);
   });
 
 vorpal
@@ -59,7 +61,7 @@ vorpal
     var today = _.filter(data.todos, function(o) {
       return o.date > midnight;
     });
-    this.log("Today")
+    this.log("Today\n");
     reportTodos(_.intersection(today, undone), "Todo", false, this);
     reportTodos(_.difference(today, undone), "Done", true, this);
     this.log("\n");
